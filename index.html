@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>숫자 맞추기</title>
+    <style>
+      :root {
+        --bg: #f5efe3;
+        --bg-accent: #f2d5a7;
+        --ink: #1f1c17;
+        --muted: #615b52;
+        --card: #fff9f0;
+        --accent: #b04a2b;
+        --accent-dark: #8f3a20;
+        --success: #1b6a4a;
+        --low: #2b6cb0;
+        --high: #b45309;
+        --shadow: 0 18px 40px rgba(31, 28, 23, 0.18);
+        --radius: 24px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+        color: var(--ink);
+        background: radial-gradient(circle at top, #fff6e6 0%, var(--bg) 45%, #e7d8bf 100%);
+      }
+
+      .texture {
+        position: fixed;
+        inset: 0;
+        background-image: radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.5), transparent 45%),
+          radial-gradient(circle at 80% 18%, rgba(255, 255, 255, 0.35), transparent 50%),
+          radial-gradient(circle at 20% 80%, rgba(0, 0, 0, 0.05), transparent 55%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      main {
+        position: relative;
+        z-index: 1;
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 48px 20px 72px;
+      }
+
+      header {
+        display: grid;
+        gap: 18px;
+        align-items: center;
+        grid-template-columns: 1fr;
+        margin-bottom: 28px;
+        animation: fadeIn 0.8s ease-out;
+      }
+
+      h1 {
+        font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+        font-size: clamp(2.2rem, 4vw, 3rem);
+        margin: 0;
+        letter-spacing: 0.02em;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        font-size: 1rem;
+        margin: 0;
+      }
+
+      .panel {
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 28px;
+        box-shadow: var(--shadow);
+        display: grid;
+        gap: 24px;
+        animation: floatIn 0.9s ease-out 0.1s both;
+      }
+
+      .row {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
+
+      .stat {
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 18px;
+        padding: 16px;
+        display: grid;
+        gap: 6px;
+        border: 1px solid rgba(176, 74, 43, 0.08);
+      }
+
+      .stat span {
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+
+      .stat strong {
+        font-size: 1.2rem;
+      }
+
+      label {
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      select,
+      input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(31, 28, 23, 0.18);
+        background: #fff;
+        font-size: 1rem;
+      }
+
+      .controls {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: minmax(160px, 1fr) auto auto;
+        align-items: end;
+      }
+
+      button {
+        border: none;
+        border-radius: 14px;
+        padding: 12px 18px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .primary {
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 10px 22px rgba(176, 74, 43, 0.25);
+      }
+
+      .ghost {
+        background: rgba(176, 74, 43, 0.12);
+        color: var(--accent-dark);
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+      }
+
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .status {
+        font-size: 1.05rem;
+        padding: 14px 16px;
+        border-radius: 14px;
+        background: rgba(176, 74, 43, 0.08);
+        color: var(--accent-dark);
+      }
+
+      .status.success {
+        background: rgba(27, 106, 74, 0.12);
+        color: var(--success);
+      }
+
+      .history {
+        margin-top: 26px;
+        display: grid;
+        gap: 16px;
+      }
+
+      .history h2 {
+        font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+        margin: 0;
+        font-size: 1.6rem;
+      }
+
+      .history-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 12px;
+      }
+
+      .history-item {
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 14px;
+        padding: 12px 14px;
+        border: 1px solid rgba(31, 28, 23, 0.08);
+        display: grid;
+        gap: 10px;
+      }
+
+      .history-meta {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 0.95rem;
+        color: var(--muted);
+      }
+
+      .history-value {
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .history-bar {
+        height: 8px;
+        background: rgba(31, 28, 23, 0.1);
+        border-radius: 999px;
+        overflow: hidden;
+      }
+
+      .history-fill {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+      }
+
+      .history-fill.low {
+        background: linear-gradient(90deg, #3a7bd5, #00d2ff);
+      }
+
+      .history-fill.high {
+        background: linear-gradient(90deg, #f6ad55, #dd6b20);
+      }
+
+      .history-fill.correct {
+        background: linear-gradient(90deg, #38a169, #9ae6b4);
+      }
+
+      .empty {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .pulse {
+        animation: pulse 2.2s ease-in-out infinite;
+      }
+
+      .app-win {
+        animation: glow 1s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes floatIn {
+        from {
+          opacity: 0;
+          transform: translateY(22px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 rgba(176, 74, 43, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 10px rgba(176, 74, 43, 0);
+        }
+      }
+
+      @keyframes glow {
+        from {
+          box-shadow: 0 0 0 rgba(27, 106, 74, 0.4);
+        }
+        to {
+          box-shadow: 0 0 28px rgba(27, 106, 74, 0.35);
+        }
+      }
+
+      @media (max-width: 720px) {
+        main {
+          padding: 32px 16px 56px;
+        }
+
+        .controls {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="texture" aria-hidden="true"></div>
+    <main>
+      <header>
+        <div>
+          <h1>숫자 맞추기 게임</h1>
+          <p class="subtitle">범위를 골라서 빠르게 맞춰보세요.</p>
+        </div>
+      </header>
+
+      <section class="panel" id="gamePanel">
+        <div class="row">
+          <div class="stat">
+            <span>난이도</span>
+            <select id="difficulty">
+              <option value="50">1~50 (쉬움)</option>
+              <option value="100" selected>1~100 (보통)</option>
+              <option value="500">1~500 (어려움)</option>
+            </select>
+          </div>
+          <div class="stat">
+            <span>타이머</span>
+            <strong id="timer">00:00</strong>
+          </div>
+          <div class="stat">
+            <span>최고 기록</span>
+            <strong id="best">--</strong>
+          </div>
+          <div class="stat">
+            <span>시도 횟수</span>
+            <strong id="attempts">0</strong>
+          </div>
+        </div>
+
+        <div class="status" id="status">1~100 사이의 숫자를 맞춰보세요.</div>
+
+        <div class="controls">
+          <div>
+            <label for="guess">숫자 입력</label>
+            <input id="guess" type="text" placeholder="예: 42" />
+          </div>
+          <button class="primary pulse" id="submit">확인</button>
+          <button class="ghost" id="restart">재시작</button>
+        </div>
+      </section>
+
+      <section class="history">
+        <h2>입력 기록</h2>
+        <p class="empty" id="empty">아직 입력이 없습니다.</p>
+        <ul class="history-list" id="historyList"></ul>
+      </section>
+    </main>
+    <script src="script.js" defer></script>
+  </body>
+</html>
